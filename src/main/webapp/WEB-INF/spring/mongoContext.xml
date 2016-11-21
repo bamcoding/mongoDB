@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mongo="http://www.springframework.org/schema/data/mongo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo-1.8.xsd">
+
+	<mongo:mongo-client
+		host="localhost"
+		port="27017">
+		<mongo:client-options
+			connections-per-host="8"
+			threads-allowed-to-block-for-connection-multiplier="4"
+			connect-timeout="1000"
+			max-wait-time="1500"
+			socket-keep-alive="true"
+			socket-timeout="1500"
+		/>
+	</mongo:mongo-client>
+
+	<bean	id="mongoTemplate"
+			class="org.springframework.data.mongodb.core.MongoTemplate">
+		<constructor-arg ref="mongo"/>
+		<constructor-arg name="databaseName" value="simple_board"/>
+	</bean>
+	
+	<bean	id="logDaoMongoDB"
+            class="com.ktds.common.mongo.dao.impl.LogDaoMongoDB">
+        <property name="mongoTemplate" ref="mongoTemplate"/>    
+    </bean>
+    
+    <bean   id="mongoDBLogger"
+            class="com.ktds.common.mongo.logger.MongoDBLogger">
+        <property name="logDao" ref="logDaoMongoDB"/>        
+    </bean>
+    
+    <bean	id="mongoDBHistoryLogger"
+    		class="com.ktds.common.mongo.logger.MongoDBHistoryLogger">
+    	<property name="logDao" ref="logDaoMongoDB" />
+    </bean>
+    
+    <bean   id="mongoLogger"
+            class="com.ktds.common.mongo.logger.MongoLogger">
+        <property name="mongoDBLogger" ref="mongoDBLogger"></property>        
+        <property name="mongoDBHistoryLogger" ref="mongoDBHistoryLogger"></property>        
+    </bean>
+	
+	
+</beans>

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+				"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="operationHistoryDao">
+	<select id="getHistoryCount" resultType="_int" parameterType="OperationHistorySearchVO">
+		SELECT	/* [operationHistoryDao.xml] [getHistoryCount] */
+				COUNT(1)
+		FROM	OPER_HIST
+		<if test="type==1">
+		WHERE	OPER_HIST_ID LIKE '%'||#{keyword}||'%'
+		</if>
+		<if test="type==2">
+		WHERE	USR_ID LIKE '%'||#{keyword}||'%'
+		</if>
+		<if test="type==3">
+		WHERE	OPER LIKE '%'||#{keyword}||'%'
+		</if>
+		<if test="type==4">
+		WHERE	IP LIKE '%'||#{keyword}||'%'
+		</if>
+		<if test="type==5">
+		WHERE	OPER_TYPE LIKE '%'||#{keyword}||'%'
+		</if>
+		<if test="type==6">
+		WHERE	CRT_DT LIKE '%'||#{keyword}||'%'
+		</if>
+	</select>
+	<select id="getAllHistory" resultType="OperationHistoryVO" parameterType="OperationHistorySearchVO">
+	SELECT	*
+	FROM	(
+				SELECT	A.*
+						,ROWNUM RNUM
+				FROM	(	
+							SELECT	/* [operationHistoryDao.xml] [getAllHistory] */
+									OPER_HIST_ID  	operationHistoryId
+									, USR_ID        userId            
+									, OPER          operation         
+									, IP            ip                
+									, OPER_TYPE     createdDate       
+									, CRT_DT        operationType     
+							FROM	OPER_HIST
+							<if test="type==1">
+							WHERE	OPER_HIST_ID LIKE '%'||#{keyword}||'%'
+							</if>
+							<if test="type==2">
+							WHERE	USR_ID LIKE '%'||#{keyword}||'%'
+							</if>
+							<if test="type==3">
+							WHERE	OPER LIKE '%'||#{keyword}||'%'
+							</if>
+							<if test="type==4">
+							WHERE	IP LIKE '%'||#{keyword}||'%'
+							</if>
+							<if test="type==5">
+							WHERE	OPER_TYPE LIKE'%'||#{keyword}||'%'
+							</if>
+							<if test="type==6">
+							WHERE	CRT_DT LIKE '%'||#{keyword}||'%'
+							</if>
+						) A
+				WHERE	ROWNUM <![CDATA[<=]]> #{endNumber}
+			)
+	WHERE	RNUM >= #{startNumber}		
+	</select>
+	
+	<insert id="addReadHistory" parameterType="map">
+		INSERT INTO /* [operationHistoryDao.xml][addReadHistory] */ 
+					HIT_BRD_USR (
+  				 					HIT_ID
+  				 					, USR_ID
+  				 					, BRD_ID
+  				 					, CRT_DT
+   							    ) 
+		VALUES 					( 
+									'HT-' || TO_CHAR(SYSDATE, 'YYYYMMDD') || '-' || LPAD(HIT_ID_SEQ.NEXTVAL, 6, '0')
+							 		, #{userId}
+							  		, #{boardId}
+ 									, SYSDATE
+ 								)
+	</insert>
+	
+	<select id="getHistoryById"
+			parameterType="map"
+			resultType="_int">
+		SELECT	/* [operationHistoryDao.xml][getHistoryById] */
+				COUNT(1)
+		FROM	HIT_BRD_USR
+		WHERE	USR_ID = #{userId}
+		AND		BRD_ID = #{boardId}		
+	</select>
+
+	<insert id="addAllHistory" parameterType="OperationHistoryVO">
+		INSERT INTO 	/* [operationHistoryDao.xml][addAllHistory] */
+						OPER_HIST 	
+								(	
+   									OPER_HIST_ID
+   									, USR_ID
+   									, OPER
+	   								, IP
+	   								, CRT_DT
+	   								, OPER_TYPE
+   								) 
+		VALUES 					(  'OH-' || TO_CHAR(SYSDATE , 'YYYYMMDD') || '-' || LPAD(OPER_HIST_ID_SEQ.NEXTVAL,6,'0')
+									, #{userId}
+									, #{operation}
+									, #{ip}
+									, SYSDATE
+									, #{operationType}
+ 								)
+	</insert>
+	
+</mapper>
